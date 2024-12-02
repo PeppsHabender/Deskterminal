@@ -93,6 +93,10 @@ public class Deskterminal {
     private void waitFor(final Process process) {
         process.waitFor();
 
+        if (DeskterminalSettings.get().isExitOnExit()) {
+            return;
+        }
+
         final TtyConnector connector = createTtyConnector();
         this.terminal.setTtyConnector(connector);
         this.terminal.start();

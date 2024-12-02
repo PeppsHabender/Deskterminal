@@ -35,6 +35,9 @@ public class DeskterminalSettings {
     /** Font size used in the terminal. */
     private int fontSize = 14;
 
+    /** Lets the terminal exit, when e.g. an 'exit' cmd is typed */
+    private boolean exitOnExit = false;
+
     /** The default command to execute in the terminal. */
     private String command = "powershell.exe";
 
