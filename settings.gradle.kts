@@ -1,1 +1,1 @@
-rootProject.name = "DesktopShell"
+rootProject.name = "Deskterminal"
