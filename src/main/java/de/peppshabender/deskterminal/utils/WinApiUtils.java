@@ -25,15 +25,19 @@ public class WinApiUtils {
     private static final int SWP_NOACTIVATE = 0x0010; // Do not activate the window.
     private static final int SWP_SHOWWINDOW = 0x0040; // Show the window.
     private static final Pointer HWND_BOTTOM =
-            Pointer.createConstant(0); // Position the window at the bottom of the z-order.
+            Pointer.createConstant(1); // Position the window at the bottom of the z-order.
 
     /**
-     * Applies the "tool window" style to a {@link JFrame}, removing it from the taskbar.
+     * Applies the "tool window" style to a {@link JFrame}, removing it from the taskbar and sets it as a child of
+     * progman.
      *
      * @param frame The {@link JFrame} to style as a tool window.
      */
     public static void unstyleFrame(final JFrame frame) {
         final Pointer hwnd = getHWND(frame);
+        final Pointer progman = USER_32.FindWindowA("Progman", null);
+
+        USER_32.SetParent(hwnd, progman);
         USER_32.SetWindowLong(hwnd, GWL_EXSTYLE, USER_32.GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_TOOLWINDOW);
     }
 
@@ -45,12 +49,8 @@ public class WinApiUtils {
      * @param frame The {@link JFrame} to send to the background.
      */
     public static void moveToBackground(final JFrame frame) {
-        final Pointer hwnd = getHWND(frame);
-        final Pointer progman = USER_32.FindWindowA("Progman", null);
-
-        USER_32.SetParent(hwnd, progman);
         USER_32.SetWindowPos(
-                hwnd,
+                getHWND(frame),
                 HWND_BOTTOM,
                 frame.getX(),
                 frame.getY(),

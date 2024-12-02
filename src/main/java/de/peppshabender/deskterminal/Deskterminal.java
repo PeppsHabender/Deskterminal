@@ -8,15 +8,12 @@ import com.pty4j.PtyProcess;
 import com.pty4j.PtyProcessBuilder;
 import de.peppshabender.deskterminal.settings.DeskterminalSettings;
 import de.peppshabender.deskterminal.utils.WinApiUtils;
-import generated.r4j.MainResources;
-import io.github.peppshabender.r4j.R4J;
 import java.awt.Color;
-import java.awt.SystemTray;
-import java.awt.TrayIcon;
+import java.awt.Robot;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.nio.charset.StandardCharsets;
-import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import lombok.SneakyThrows;
 
@@ -27,7 +24,7 @@ public class Deskterminal {
     private final JFrame mainFrame = new JFrame();
 
     /** The terminal widget used to interact with the terminal. */
-    private final JediTerminal terminal = new JediTerminal();
+    private final JediTerminal terminal = new JediTerminal(this.mainFrame);
 
     /**
      * Private constructor for initializing the application. Sets up the look and feel, main frame, terminal, and system
@@ -37,7 +34,6 @@ public class Deskterminal {
         LafManager.installTheme(new OneDarkTheme()); // Install the OneDark theme
         initMainFrame(); // Initialize the main frame
         initTerminal(); // Initialize the terminal
-        initTray(); // Initialize the system tray icon
     }
 
     /**
@@ -46,15 +42,12 @@ public class Deskterminal {
      */
     private void initMainFrame() {
         this.mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.mainFrame.setLocationRelativeTo(null); // Center the window
         this.mainFrame.setUndecorated(true); // Make the window undecorated
-        this.mainFrame.setBackground(new Color(0, 0, 0, 0)); // Set the window background to transparent
+        this.mainFrame.setBackground(new Color(0, 0, 0, 0));
 
         final DeskterminalSettings settings = DeskterminalSettings.get();
         this.mainFrame.setSize(settings.getWidth(), settings.getHeight());
         this.mainFrame.setLocation(settings.getX(), settings.getY());
-
-        this.mainFrame.getContentPane().add(this.terminal); // Add the terminal component to the frame
 
         // Add a listener to move the window to the background when activated
         this.mainFrame.addWindowListener(new WindowAdapter() {
@@ -74,19 +67,6 @@ public class Deskterminal {
         this.terminal.setTtyConnector(createTtyConnector()); // Set the terminal's TTY connector
         this.terminal.setOpaque(false); // Set the terminal to be transparent
         this.terminal.setBackground(new Color(0, 0, 0, 0)); // Set the background to transparent
-    }
-
-    /**
-     * Initializes the system tray icon for the application. Adds the icon to the system tray and associates it with the
-     * tray menu.
-     */
-    @SneakyThrows
-    private void initTray() {
-        final TrayIcon icon = new TrayIcon(ImageIO.read(R4J.asUrl(MainResources.DESKTERMINAL)));
-        icon.setImageAutoSize(true);
-        icon.setPopupMenu(new TrayMenu(this.mainFrame)); // Set the tray menu for the icon
-
-        SystemTray.getSystemTray().add(icon); // Add the icon to the system tray
     }
 
     /**
@@ -113,8 +93,14 @@ public class Deskterminal {
     private void waitFor(final Process process) {
         process.waitFor();
 
-        this.terminal.setTtyConnector(createTtyConnector());
+        final TtyConnector connector = createTtyConnector();
+        this.terminal.setTtyConnector(connector);
         this.terminal.start();
+
+        this.terminal.requestFocusInWindow();
+        connector.write("clear");
+        final Robot robot = new Robot();
+        robot.keyPress(KeyEvent.VK_ENTER);
     }
 
     /**
