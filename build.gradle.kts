@@ -34,12 +34,17 @@ application {
     mainClass.set(mainClassPath)
 }
 
-tasks.withType<DefaultLaunch4jTask> {
-    mainClassName = mainClassPath
+tasks.register<Copy>("copyJre") {
+    from(projectDir.resolve("lib").resolve("jdk-17.0.13+11-jre"))
+    into(layout.buildDirectory.dir("launch4j/jre"))
 }
 
-val lombok: String by extra("1.18.34")
-val jediterm: String by extra("3.47")
+tasks.withType<DefaultLaunch4jTask> {
+    mainClassName = mainClassPath
+    bundledJrePath = "jre"
+
+    dependsOn("copyJre")
+}
 
 dependencies {
     annotationProcessor(libs.lombok)

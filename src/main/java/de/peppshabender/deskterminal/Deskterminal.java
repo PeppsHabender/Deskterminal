@@ -94,6 +94,7 @@ public class Deskterminal {
         process.waitFor();
 
         if (DeskterminalSettings.get().isExitOnExit()) {
+            System.exit(0);
             return;
         }
 
