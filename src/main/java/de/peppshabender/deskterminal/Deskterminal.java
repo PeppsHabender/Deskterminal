@@ -7,14 +7,18 @@ import com.jediterm.terminal.TtyConnector;
 import com.pty4j.PtyProcess;
 import com.pty4j.PtyProcessBuilder;
 import de.peppshabender.deskterminal.settings.DeskterminalSettings;
-import de.peppshabender.deskterminal.utils.WinApiUtils;
+import de.peppshabender.deskterminal.utils.WindowsUtils;
 import java.awt.Color;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.nio.charset.StandardCharsets;
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+
+import generated.r4j.MainResources;
+import io.github.peppshabender.r4j.R4J;
 import lombok.SneakyThrows;
 
 /** Main class for initializing and running Deskterminal. */
@@ -40,7 +44,10 @@ public class Deskterminal {
      * Initializes the main application window (JFrame). Configures window settings such as size, position,
      * transparency, and event listeners.
      */
+    @SneakyThrows
     private void initMainFrame() {
+        this.mainFrame.setIconImage(ImageIO.read(R4J.asUrl(MainResources.DESKTERMINAL)));
+
         this.mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.mainFrame.setUndecorated(true); // Make the window undecorated
         this.mainFrame.setBackground(new Color(0, 0, 0, 0));
@@ -53,7 +60,7 @@ public class Deskterminal {
         this.mainFrame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowActivated(WindowEvent e) {
-                WinApiUtils.moveToBackground(Deskterminal.this.mainFrame);
+                WindowsUtils.moveToBackground(Deskterminal.this.mainFrame);
                 Deskterminal.this.terminal.requestFocus(); // Focus the terminal
             }
         });
@@ -115,8 +122,8 @@ public class Deskterminal {
     public void run() {
         this.mainFrame.setVisible(true);
 
-        WinApiUtils.unstyleFrame(this.mainFrame); // Unstyle the window (remove border and other styles)
-        WinApiUtils.moveToBackground(this.mainFrame); // Move the window to the background
+        WindowsUtils.unstyleFrame(this.mainFrame); // Unstyle the window (remove border and other styles)
+        WindowsUtils.moveToBackground(this.mainFrame); // Move the window to the background
 
         this.terminal.start();
     }

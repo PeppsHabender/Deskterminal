@@ -4,6 +4,7 @@ jediterm = "3.47"
 darklaf = "3.0.2"
 pty4j = "0.13.2"
 jna = "5.15.0"
+mslinks = "1.0.6.2"
 
 [libraries]
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
@@ -13,3 +14,4 @@ jediterm-pty = { module = "org.jetbrains.jediterm:jediterm-pty", version = "2.69
 pty4j = { module = "org.jetbrains.pty4j:pty4j", version.ref = "pty4j" }
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 darklaf-core = { module = "com.github.weisj:darklaf-core", version.ref = "darklaf" }
+mslinks = { module = "com.github.vatbub:mslinks", version.ref = "mslinks" }

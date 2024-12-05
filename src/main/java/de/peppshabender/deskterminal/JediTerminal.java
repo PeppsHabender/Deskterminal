@@ -9,7 +9,7 @@ import com.jediterm.terminal.ui.settings.SettingsProvider;
 import de.peppshabender.deskterminal.settings.DeskterminalSettings;
 import de.peppshabender.deskterminal.settings.JediTermSettingsProvider;
 import de.peppshabender.deskterminal.utils.ColorUtils;
-import de.peppshabender.deskterminal.utils.WinApiUtils;
+import de.peppshabender.deskterminal.utils.WindowsUtils;
 import generated.r4j.MainResources;
 import io.github.peppshabender.r4j.R4J;
 import java.awt.BorderLayout;
@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -130,6 +131,16 @@ public class JediTerminal extends JediTermWidget {
                 }
             });
 
+            final JCheckBoxMenuItem autoStartItem = new JCheckBoxMenuItem("Autostart");
+            autoStartItem.setSelected(WindowsUtils.isAutoStart());
+            menu.add(autoStartItem);
+            autoStartItem.addActionListener(e -> {
+                WindowsUtils.toggleAutoStart();
+                autoStartItem.setSelected(WindowsUtils.isAutoStart());
+            });
+
+            menu.addSeparator();
+
             final JMenuItem exitItem = menu.add("Exit");
             exitItem.addActionListener(e -> System.exit(0));
         }
@@ -163,7 +174,7 @@ public class JediTerminal extends JediTermWidget {
             Arrays.stream(this.mainFrameComponents).forEach(mainFrame.getContentPane()::add);
             this.mainFrameComponents = new Component[0];
 
-            WinApiUtils.unstyleFrame(mainFrame);
+            WindowsUtils.unstyleFrame(mainFrame);
         }
 
         private void hideTerminal(final JFrame mainFrame) {

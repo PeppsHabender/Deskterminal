@@ -5,18 +5,26 @@ import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.win32.W32APIOptions;
 import java.awt.Window;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import javax.swing.JFrame;
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
+import mslinks.ShellLink;
 
 /**
  * Utility class for interacting with the Windows API using JNA (Java Native Access). Provides methods for manipulating
  * Swing windows (e.g., unstyling a frame or moving it to the background).
  */
 @UtilityClass
-public class WinApiUtils {
+public class WindowsUtils {
 
     /** JNA interface for interacting with the Windows `User32` library. */
     private static final User32 USER_32 = Native.load("user32", User32.class, W32APIOptions.DEFAULT_OPTIONS);
+
+    private static final Path STARTUP_PATH = Path.of(System.getProperty("user.home"))
+            .resolve("AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/Deskterminal.lnk");
+    private static final String APP_PATH = "Deskterminal.exe";
 
     private static final int GWL_EXSTYLE = -20; // Extended window style index.
     private static final int WS_EX_TOOLWINDOW = 0x00000080; // Tool window style (excludes window from the taskbar).
@@ -67,6 +75,32 @@ public class WinApiUtils {
      */
     public static Pointer getHWND(Window window) {
         return Native.getComponentPointer(window);
+    }
+
+    /** @return true when the app is in the auto start folder, false otherwise */
+    public static boolean isAutoStart() {
+        return Files.exists(STARTUP_PATH);
+    }
+
+    /**
+     * Copies the application to the windows auto start folder or deletes it vice-versa.
+     *
+     * <p>This requires the application to not have been renamed!
+     */
+    @SneakyThrows
+    public static void toggleAutoStart() {
+        final Path appPath = Path.of(APP_PATH);
+        if (!Files.exists(appPath) || !Files.exists(STARTUP_PATH.getParent())) {
+            return;
+        }
+
+        if (Files.exists(STARTUP_PATH)) {
+            Files.delete(STARTUP_PATH);
+        }
+
+        ShellLink.createLink(
+                appPath.toAbsolutePath().toString(),
+                STARTUP_PATH.toAbsolutePath().toString());
     }
 
     /** Interface for the Windows `User32` library, providing access to window manipulation functions. */
