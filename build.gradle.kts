@@ -11,7 +11,7 @@ plugins {
 
 ///////// Constants
 
-group = "de.peppshabender.deskterminal"
+group = "de.peppshabender"
 version = "0.0.1"
 val distGroup = "dist"
 val distDir = "distributions"
@@ -38,6 +38,26 @@ tasks.withType<JavaCompile> {
 
 application {
     mainClass.set(mainClassPath)
+}
+
+dependencies {
+    annotationProcessor(libs.lombok)
+    compileOnly(libs.lombok)
+
+    implementation(libs.jediterm.ui)
+    implementation(libs.jediterm.core)
+    implementation(libs.jediterm.pty)
+    implementation(libs.pty4j)
+    implementation(libs.jna)
+    implementation(libs.darklaf.core)
+    implementation(libs.mslinks)
+    implementation(r4j.java)
+}
+
+spotless {
+    java {
+        palantirJavaFormat("2.39.0").formatJavadoc(true)
+    }
 }
 
 val copyJre = tasks.register<Copy>("copyJre") {
@@ -76,24 +96,4 @@ tasks.register<Zip>("zipDist") {
     destinationDirectory.set(layout.buildDirectory.dir(distDir))
 
     dependsOn(launch4j)
-}
-
-dependencies {
-    annotationProcessor(libs.lombok)
-    compileOnly(libs.lombok)
-
-    implementation(libs.jediterm.ui)
-    implementation(libs.jediterm.core)
-    implementation(libs.jediterm.pty)
-    implementation(libs.pty4j)
-    implementation(libs.jna)
-    implementation(libs.darklaf.core)
-    implementation(libs.mslinks)
-    implementation(r4j.java)
-}
-
-spotless {
-    java {
-        palantirJavaFormat("2.39.0").formatJavadoc(true)
-    }
 }
