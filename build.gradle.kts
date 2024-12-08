@@ -12,7 +12,7 @@ plugins {
 ///////// Constants
 
 group = "de.peppshabender"
-version = "0.0.1"
+version = "0.0.2"
 val distGroup = "dist"
 val distDir = "distributions"
 val appName = "Deskterminal"

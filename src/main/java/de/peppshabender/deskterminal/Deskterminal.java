@@ -11,8 +11,6 @@ import de.peppshabender.deskterminal.utils.WindowsUtils;
 import generated.r4j.MainResources;
 import io.github.peppshabender.r4j.R4J;
 import java.awt.Color;
-import java.awt.Robot;
-import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.nio.charset.StandardCharsets;
@@ -86,6 +84,7 @@ public class Deskterminal {
         final String[] command = new String[] {DeskterminalSettings.get().getCommand()};
         final PtyProcess process = new PtyProcessBuilder()
                 .setCommand(command)
+                .setWindowsAnsiColorEnabled(true)
                 .setEnvironment(System.getenv())
                 .start();
 
@@ -104,14 +103,12 @@ public class Deskterminal {
             return;
         }
 
+        this.terminal.getTerminal().clearScreen();
+        this.terminal.getTerminal().cursorPosition(0, 0);
+
         final TtyConnector connector = createTtyConnector();
         this.terminal.setTtyConnector(connector);
         this.terminal.start();
-
-        this.terminal.requestFocusInWindow();
-        connector.write("clear");
-        final Robot robot = new Robot();
-        robot.keyPress(KeyEvent.VK_ENTER);
     }
 
     /**
