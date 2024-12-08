@@ -131,13 +131,15 @@ public class JediTerminal extends JediTermWidget {
                 }
             });
 
-            final JCheckBoxMenuItem autoStartItem = new JCheckBoxMenuItem("Autostart");
-            autoStartItem.setSelected(WindowsUtils.isAutoStart());
-            menu.add(autoStartItem);
-            autoStartItem.addActionListener(e -> {
-                WindowsUtils.toggleAutoStart();
+            if (!WindowsUtils.isAutoStart()) {
+                final JCheckBoxMenuItem autoStartItem = new JCheckBoxMenuItem("Autostart");
                 autoStartItem.setSelected(WindowsUtils.isAutoStart());
-            });
+                menu.add(autoStartItem);
+                autoStartItem.addActionListener(e -> {
+                    WindowsUtils.toggleAutoStart();
+                    autoStartItem.setSelected(WindowsUtils.isAutoStart());
+                });
+            }
 
             menu.addSeparator();
 

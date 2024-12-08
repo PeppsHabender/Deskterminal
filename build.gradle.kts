@@ -18,7 +18,7 @@ val distDir = "distributions"
 val appName = "Deskterminal"
 val launch4jStr = "launch4j"
 val appBuildDir = "$launch4jStr/$appName"
-val mainClassPath = "$group.$appName"
+val mainClassPath = "$group.${appName.toLowerCase()}.$appName"
 
 repositories {
     mavenCentral()
@@ -68,11 +68,11 @@ val copyJre = tasks.register<Copy>("copyJre") {
 val launch4j = tasks.withType<DefaultLaunch4jTask> {
     mainClassName = mainClassPath
     icon = projectDir.resolve("deskterminal.ico").absolutePath
-    bundledJrePath = "jre"
+    bundledJrePath.value(providers.provider {
+        if(layout.buildDirectory.dir("$appBuildDir/jre").get().asFile.exists()) "jre" else null
+    })
     outputDir = appBuildDir
     jvmOptions.add("--add-opens java.desktop/sun.awt=ALL-UNNAMED")
-
-    dependsOn(copyJre)
 }
 
 tasks.register<Zip>("zipBundledDist") {
@@ -80,10 +80,10 @@ tasks.register<Zip>("zipBundledDist") {
 
     from(layout.buildDirectory.dir(launch4jStr))
 
-    archiveBaseName = "desktermial_bundled"
+    archiveBaseName = "deskterminal"
     destinationDirectory.set(layout.buildDirectory.dir(distDir))
 
-    dependsOn(launch4j)
+    dependsOn(copyJre, launch4j)
 }
 
 tasks.register<Zip>("zipDist") {

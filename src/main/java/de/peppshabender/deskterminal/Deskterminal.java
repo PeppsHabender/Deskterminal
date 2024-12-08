@@ -8,6 +8,8 @@ import com.pty4j.PtyProcess;
 import com.pty4j.PtyProcessBuilder;
 import de.peppshabender.deskterminal.settings.DeskterminalSettings;
 import de.peppshabender.deskterminal.utils.WindowsUtils;
+import generated.r4j.MainResources;
+import io.github.peppshabender.r4j.R4J;
 import java.awt.Color;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
@@ -16,9 +18,6 @@ import java.awt.event.WindowEvent;
 import java.nio.charset.StandardCharsets;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
-
-import generated.r4j.MainResources;
-import io.github.peppshabender.r4j.R4J;
 import lombok.SneakyThrows;
 
 /** Main class for initializing and running Deskterminal. */
