@@ -56,13 +56,15 @@ public class JediTermSettingsProvider extends DefaultSettingsProvider {
         final DeskterminalSettings settings = DeskterminalSettings.get();
 
         return new TextStyle(
-                ColorUtils.toTerminalColor(settings.getSelectionForeground()),
+                settings.getSelectionForeground() == null
+                        ? null
+                        : ColorUtils.toTerminalColor(settings.getSelectionForeground()),
                 ColorUtils.toTerminalColor(settings.getSelectionBackground()));
     }
 
     @Override
     public Font getTerminalFont() {
-        return new Font(DeskterminalSettings.get().getFontFamily(), Font.PLAIN, (int) getTerminalFontSize());
+        return DeskterminalSettings.get().getFont();
     }
 
     @Override

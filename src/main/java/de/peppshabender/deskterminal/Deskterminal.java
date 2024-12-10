@@ -11,6 +11,7 @@ import de.peppshabender.deskterminal.utils.WindowsUtils;
 import generated.r4j.MainResources;
 import io.github.peppshabender.r4j.R4J;
 import java.awt.Color;
+import java.awt.FontMetrics;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.nio.charset.StandardCharsets;
@@ -25,7 +26,7 @@ public class Deskterminal {
     private final JFrame mainFrame = new JFrame();
 
     /** The terminal widget used to interact with the terminal. */
-    private final JediTerminal terminal = new JediTerminal(this.mainFrame);
+    private JediTerminal terminal;
 
     /**
      * Private constructor for initializing the application. Sets up the look and feel, main frame, terminal, and system
@@ -68,6 +69,7 @@ public class Deskterminal {
      * appearance.
      */
     private void initTerminal() {
+        this.terminal = new JediTerminal(this.mainFrame);
         this.terminal.setTtyConnector(createTtyConnector()); // Set the terminal's TTY connector
         this.terminal.setOpaque(false); // Set the terminal to be transparent
         this.terminal.setBackground(new Color(0, 0, 0, 0)); // Set the background to transparent
@@ -82,8 +84,13 @@ public class Deskterminal {
     @SneakyThrows
     private TtyConnector createTtyConnector() {
         final String[] command = new String[] {DeskterminalSettings.get().getCommand()};
+
+        final FontMetrics font =
+                this.terminal.getFontMetrics(DeskterminalSettings.get().getFont());
         final PtyProcess process = new PtyProcessBuilder()
                 .setCommand(command)
+                // Roughly approximate the column size here without any padding so we don't overshoot
+                .setInitialColumns(DeskterminalSettings.get().getWidth() / font.charWidth('M'))
                 .setWindowsAnsiColorEnabled(true)
                 .setEnvironment(System.getenv())
                 .start();
@@ -103,8 +110,7 @@ public class Deskterminal {
             return;
         }
 
-        this.terminal.getTerminal().clearScreen();
-        this.terminal.getTerminal().cursorPosition(0, 0);
+        this.terminal.getTerminal().reset(true);
 
         final TtyConnector connector = createTtyConnector();
         this.terminal.setTtyConnector(connector);

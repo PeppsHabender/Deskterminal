@@ -1,6 +1,7 @@
 package de.peppshabender.deskterminal.settings;
 
 import com.jediterm.core.Color;
+import java.awt.Font;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,7 +52,7 @@ public class DeskterminalSettings {
     /** Background color for selected text. */
     private Color selectionBackground = new Color(0, 0, 0, 100);
     /** Foreground color for selected text. */
-    private Color selectionForeground = new Color(0xc0c0c0);
+    private Color selectionForeground = null;
 
     /** ANSI black color. */
     private Color black = new Color(0x000000);
@@ -86,6 +87,10 @@ public class DeskterminalSettings {
     private Color brightCyan = new Color(0x00ffff);
     /** Bright ANSI white color. */
     private Color brightWhite = new Color(0xffffff);
+
+    public Font getFont() {
+        return new Font(this.fontFamily, Font.PLAIN, this.fontSize);
+    }
 
     /**
      * Retrieves the singleton instance of the DeskterminalSettings. If the settings file exists, the settings are

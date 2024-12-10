@@ -1,6 +1,7 @@
 package de.peppshabender.deskterminal.settings;
 
 import com.jediterm.core.Color;
+import de.peppshabender.deskterminal.utils.ColorUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -150,17 +151,7 @@ class SettingsHelper {
             if (int.class.equals(field.getType())) {
                 value = Integer.parseInt((String) value);
             } else if (Color.class.equals(field.getType())) {
-                final Matcher matcher = COLOR_RGX.matcher((String) value);
-                if (!matcher.find()) {
-                    value = null;
-                } else {
-                    final int a = matcher.group(1).isEmpty() ? 255 : Integer.parseInt(matcher.group(1));
-                    final int r = Integer.parseInt(matcher.group(2));
-                    final int g = Integer.parseInt(matcher.group(3));
-                    final int b = Integer.parseInt(matcher.group(4));
-
-                    value = new Color(r, g, b, a);
-                }
+                value = fromString((String) value);
             } else if (boolean.class.equals(field.getType())) {
                 value = Boolean.valueOf((String) value);
             }
@@ -170,5 +161,23 @@ class SettingsHelper {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             // Handle reflection-related exceptions silently
         }
+    }
+
+    private Color fromString(final String value) {
+        if (value.startsWith("#")) {
+            return ColorUtils.convert(java.awt.Color.decode(value));
+        }
+
+        final Matcher matcher = COLOR_RGX.matcher(value);
+        if (!matcher.find()) {
+            return null;
+        }
+
+        final int a = matcher.group(1).isEmpty() ? 255 : Integer.parseInt(matcher.group(1));
+        final int r = Integer.parseInt(matcher.group(2));
+        final int g = Integer.parseInt(matcher.group(3));
+        final int b = Integer.parseInt(matcher.group(4));
+
+        return new Color(r, g, b, a);
     }
 }
