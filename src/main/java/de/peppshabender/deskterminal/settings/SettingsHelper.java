@@ -68,10 +68,14 @@ class SettingsHelper {
             try {
                 field.setAccessible(true);
 
-                final String value;
+                Object value = field.get(settings);
+                if (value == null) {
+                    continue;
+                }
+
                 if (Color.class.equals(field.getType())) {
                     // Convert Color to rgba format
-                    final Color color = (Color) field.get(settings);
+                    final Color color = (Color) value;
                     value = "rgba("
                             + color.getRed()
                             + ","
@@ -81,14 +85,13 @@ class SettingsHelper {
                             + ","
                             + color.getAlpha()
                             + ")";
-                } else {
-                    value = field.get(settings).toString();
                 }
 
                 props.add(field.getName() + "=" + value);
-                field.setAccessible(false);
             } catch (IllegalAccessException e) {
                 // Handle access exceptions silently
+            } finally {
+                field.setAccessible(false);
             }
         }
 

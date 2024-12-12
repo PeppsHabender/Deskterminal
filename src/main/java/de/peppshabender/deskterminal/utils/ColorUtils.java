@@ -60,6 +60,10 @@ public class ColorUtils {
      * @return A {@link com.jediterm.core.Color} equivalent to the input color.
      */
     public static Color convert(final java.awt.Color c) {
+        if (c == null) {
+            return null;
+        }
+
         return new Color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
     }
 
@@ -70,6 +74,10 @@ public class ColorUtils {
      * @return A {@link java.awt.Color} equivalent to the input color.
      */
     public static java.awt.Color convert(final Color c) {
+        if (c == null) {
+            return null;
+        }
+
         return new java.awt.Color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
     }
 

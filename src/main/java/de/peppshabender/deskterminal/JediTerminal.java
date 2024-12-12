@@ -7,22 +7,17 @@ import com.jediterm.terminal.ui.TerminalActionProvider;
 import com.jediterm.terminal.ui.TerminalPanel;
 import com.jediterm.terminal.ui.settings.SettingsProvider;
 import de.peppshabender.deskterminal.settings.DeskterminalSettings;
+import de.peppshabender.deskterminal.settings.DeskterminalSettingsEditor;
 import de.peppshabender.deskterminal.settings.JediTermSettingsProvider;
 import de.peppshabender.deskterminal.utils.ColorUtils;
 import de.peppshabender.deskterminal.utils.WindowsUtils;
-import generated.r4j.MainResources;
-import io.github.peppshabender.r4j.R4J;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Desktop;
-import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -114,22 +109,14 @@ public class JediTerminal extends JediTermWidget {
         protected @NotNull JPopupMenu createPopupMenu(@NotNull TerminalActionProvider actionProvider) {
             final JPopupMenu menu = super.createPopupMenu(actionProvider);
             menu.addSeparator();
-            addCustomItems(menu, "Move/Resize");
+            addCustomItems(menu, "Edit Configuration");
 
             return menu;
         }
 
-        private void addCustomItems(final JPopupMenu menu, final String resizeLabel) {
-            final JMenuItem resizeItem = menu.add(resizeLabel);
-            resizeItem.addActionListener(e -> toggleDecoration(resizeItem, JediTerminal.this.mainFrame));
-
-            final JMenuItem editItem = menu.add("Edit Settings");
-            editItem.addActionListener(e -> {
-                try {
-                    Desktop.getDesktop().edit(DeskterminalSettings.SETTINGS_PATH.toFile());
-                } catch (final IOException ignored) {
-                }
-            });
+        private void addCustomItems(final JPopupMenu menu, final String configLabel) {
+            final JMenuItem configItem = menu.add(configLabel);
+            configItem.addActionListener(e -> toggleDecoration(JediTerminal.this.mainFrame));
 
             if (!WindowsUtils.isAutoStart()) {
                 final JCheckBoxMenuItem autoStartItem = new JCheckBoxMenuItem("Autostart");
@@ -147,7 +134,7 @@ public class JediTerminal extends JediTermWidget {
             exitItem.addActionListener(e -> System.exit(0));
         }
 
-        private void toggleDecoration(final JMenuItem parent, final JFrame mainFrame) {
+        private void toggleDecoration(final JFrame mainFrame) {
             // Store current window size and position
             mainFrame.dispose();
 
@@ -189,12 +176,13 @@ public class JediTerminal extends JediTermWidget {
             final Border border = BorderFactory.createLineBorder(Color.WHITE, 3);
             panel.setBorder(border);
 
-            final ImageIcon img = new ImageIcon(R4J.asUrl(MainResources.DESKTERMINAL));
-            panel.add(new JLabel(img), BorderLayout.CENTER);
-
             final JPopupMenu popupMenu = new JPopupMenu();
-            addCustomItems(popupMenu, "Save Position/Size              ");
+            addCustomItems(popupMenu, "Save Configuration              ");
             panel.setComponentPopupMenu(popupMenu);
+
+            final DeskterminalSettingsEditor editor = new DeskterminalSettingsEditor();
+            editor.setInheritsPopupMenu(true);
+            panel.add(editor, BorderLayout.CENTER);
 
             mainFrame.getContentPane().add(panel);
         }

@@ -90,7 +90,7 @@ public class Deskterminal {
         final PtyProcess process = new PtyProcessBuilder()
                 .setCommand(command)
                 // Roughly approximate the column size here without any padding so we don't overshoot
-                .setInitialColumns(DeskterminalSettings.get().getWidth() / font.charWidth('M'))
+                .setInitialColumns(DeskterminalSettings.get().getWidth() / font.charWidth('M') - 1)
                 .setWindowsAnsiColorEnabled(true)
                 .setEnvironment(System.getenv())
                 .start();
