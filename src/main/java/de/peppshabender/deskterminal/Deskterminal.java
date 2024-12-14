@@ -85,16 +85,19 @@ public class Deskterminal {
     private TtyConnector createTtyConnector() {
         final String[] command = new String[] {DeskterminalSettings.get().getCommand()};
 
-        final FontMetrics font =
-                this.terminal.getFontMetrics(DeskterminalSettings.get().getFont());
-        final PtyProcess process = new PtyProcessBuilder()
+        final DeskterminalSettings settings = DeskterminalSettings.get();
+        final FontMetrics font = this.terminal.getFontMetrics(settings.getFont());
+        final PtyProcessBuilder processBuilder = new PtyProcessBuilder()
                 .setCommand(command)
                 // Roughly approximate the column size here without any padding so we don't overshoot
                 .setInitialColumns(DeskterminalSettings.get().getWidth() / font.charWidth('M') - 1)
                 .setWindowsAnsiColorEnabled(true)
-                .setEnvironment(System.getenv())
-                .start();
+                .setEnvironment(System.getenv());
+        if (settings.getInitialDirectory() != null) {
+            processBuilder.setDirectory(settings.getInitialDirectory());
+        }
 
+        final PtyProcess process = processBuilder.start();
         // Start a separate thread to wait for the process to exit
         new Thread(() -> waitFor(process)).start();
 

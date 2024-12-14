@@ -2,6 +2,7 @@ package de.peppshabender.deskterminal.settings;
 
 import com.jediterm.core.Color;
 import de.peppshabender.deskterminal.utils.ColorUtils;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,7 +42,7 @@ class SettingsHelper {
      * `rgb(r, g, b)`.
      */
     private static final Pattern COLOR_RGX =
-            Pattern.compile("rgb(a?)\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\)");
+            Pattern.compile("rgb(a?)\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\)");
 
     /**
      * Stores the settings to the specified file.
@@ -157,12 +158,14 @@ class SettingsHelper {
                 value = fromString((String) value);
             } else if (boolean.class.equals(field.getType())) {
                 value = Boolean.valueOf((String) value);
+            } else if (File.class.equals(field.getType())) {
+                value = new File((String) value);
             }
 
             if (value != null) field.set(settings, value);
-            field.setAccessible(false);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             // Handle reflection-related exceptions silently
+            System.out.println("krhsgikh");
         }
     }
 
@@ -176,10 +179,10 @@ class SettingsHelper {
             return null;
         }
 
-        final int a = matcher.group(1).isEmpty() ? 255 : Integer.parseInt(matcher.group(1));
         final int r = Integer.parseInt(matcher.group(2));
         final int g = Integer.parseInt(matcher.group(3));
         final int b = Integer.parseInt(matcher.group(4));
+        final int a = matcher.group(1).isEmpty() ? 255 : Integer.parseInt(matcher.group(5));
 
         return new Color(r, g, b, a);
     }

@@ -6,13 +6,21 @@ import de.peppshabender.deskterminal.utils.swing.ColoredCircle;
 import de.peppshabender.deskterminal.utils.swing.WrapLayout;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -31,10 +39,21 @@ public class DeskterminalSettingsEditor extends JPanel {
         setLayout(new BorderLayout());
 
         final JPanel editorPanel = new JPanel();
-        editorPanel.setLayout(new WrapLayout(FlowLayout.LEFT));
+        editorPanel.setLayout(new BoxLayout(editorPanel, BoxLayout.Y_AXIS));
 
+        Field prev = null;
+        JPanel currPanel = new JPanel(new WrapLayout(FlowLayout.LEFT));
         // Reflectively analyze DeskterminalSettings fields
         for (final Field field : DeskterminalSettings.class.getDeclaredFields()) {
+            if (prev == null) {
+                prev = field;
+            } else if (!prev.getType().equals(field.getType())) {
+                editorPanel.add(currPanel);
+                currPanel = new JPanel(new WrapLayout(FlowLayout.LEFT));
+
+                prev = field;
+            }
+
             if (Modifier.isStatic(field.getModifiers())) {
                 continue; // Ignore static fields
             }
@@ -47,8 +66,10 @@ public class DeskterminalSettingsEditor extends JPanel {
             final Component editorComponent = createEditorComponent(field, settings);
             fieldPanel.add(editorComponent);
 
-            editorPanel.add(fieldPanel);
+            currPanel.add(fieldPanel);
         }
+
+        editorPanel.add(currPanel);
 
         final JScrollPane scrollPane = new JScrollPane(
                 editorPanel,
@@ -56,7 +77,7 @@ public class DeskterminalSettingsEditor extends JPanel {
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setInheritsPopupMenu(true);
 
-        add(scrollPane, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.NORTH);
     }
 
     /** Creates an appropriate editor component for the field. */
@@ -83,6 +104,14 @@ public class DeskterminalSettingsEditor extends JPanel {
             return checkBox;
         } else if (Color.class.equals(type)) {
             return createColorPicker(field, ColorUtils.convert((Color) value));
+        } else if (File.class.equals(type)) {
+            return createFilePicker(
+                    settings.getInitialDirectory() == null
+                            ? new File("").getAbsolutePath()
+                            : settings.getInitialDirectory(),
+                    "...",
+                    JFileChooser.DIRECTORIES_ONLY,
+                    settings::setInitialDirectory);
         }
 
         throw new UnsupportedOperationException();
@@ -93,10 +122,10 @@ public class DeskterminalSettingsEditor extends JPanel {
         final ColoredCircle circle = new ColoredCircle(base);
 
         // Open color chooser on click
-        circle.addMouseListener(new java.awt.event.MouseAdapter() {
+        circle.addMouseListener(new MouseAdapter() {
             @Override
             @SneakyThrows
-            public void mouseClicked(java.awt.event.MouseEvent e) {
+            public void mouseClicked(MouseEvent e) {
                 if (e.getButton() != MouseEvent.BUTTON1) {
                     return;
                 }
@@ -117,6 +146,30 @@ public class DeskterminalSettingsEditor extends JPanel {
         });
 
         return circle;
+    }
+
+    private JComponent createFilePicker(
+            final String inDirectory, final String label, final int selectionMode, final Consumer<File> onSelect) {
+        final JPanel panel = new JPanel();
+        final JLabel jlabel = new JLabel(inDirectory);
+        panel.add(jlabel);
+
+        final JButton button = new JButton(label);
+        button.setPreferredSize(new Dimension(30, 30));
+        panel.add(button);
+
+        button.addActionListener(e -> {
+            final JFileChooser chooser = new JFileChooser();
+            if (settings.getInitialDirectory() != null) {
+                chooser.setCurrentDirectory(new File(settings.getInitialDirectory()));
+            }
+            chooser.setFileSelectionMode(selectionMode);
+            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                onSelect.accept(chooser.getSelectedFile());
+                jlabel.setText(chooser.getSelectedFile().getAbsolutePath());
+            }
+        });
+        return panel;
     }
 
     @SneakyThrows

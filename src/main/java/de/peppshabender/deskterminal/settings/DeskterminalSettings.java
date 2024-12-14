@@ -2,9 +2,11 @@ package de.peppshabender.deskterminal.settings;
 
 import com.jediterm.core.Color;
 import java.awt.Font;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -44,6 +46,10 @@ public class DeskterminalSettings {
 
     /** The font family used for terminal text. */
     private String fontFamily = "Consolas";
+
+    /** The directory to launch the process in. */
+    private File initialDirectory =
+            new File(Optional.ofNullable(System.getProperty("user.home")).orElse(""));
 
     /** Background color of the terminal. */
     private Color backgroundColor = new Color(0, 0, 0, 1);
@@ -90,6 +96,14 @@ public class DeskterminalSettings {
 
     public Font getFont() {
         return new Font(this.fontFamily, Font.PLAIN, this.fontSize);
+    }
+
+    public String getInitialDirectory() {
+        if (this.initialDirectory == null || !this.initialDirectory.isDirectory()) {
+            return null;
+        }
+
+        return this.initialDirectory.getAbsolutePath();
     }
 
     /**
