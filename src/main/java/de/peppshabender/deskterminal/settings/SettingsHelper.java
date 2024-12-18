@@ -18,6 +18,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.experimental.UtilityClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for serializing and deserializing {@link DeskterminalSettings}. Provides methods to save settings to a
@@ -36,6 +38,7 @@ import lombok.experimental.UtilityClass;
  */
 @UtilityClass
 class SettingsHelper {
+    private static final Logger LOG = LoggerFactory.getLogger(SettingsHelper.class);
 
     /**
      * Regular expression pattern for parsing RGBA color values. Matches strings in the format: `rgba(r, g, b, a)` or
@@ -51,6 +54,7 @@ class SettingsHelper {
      * @param settings The {@link DeskterminalSettings} object to serialize.
      */
     public static void store(final Path to, final DeskterminalSettings settings) {
+        LOG.debug("Storing configuration...");
         final List<String> props = new ArrayList<>();
 
         final Field[] fields = DeskterminalSettings.class.getDeclaredFields();
@@ -61,6 +65,7 @@ class SettingsHelper {
                 continue; // Skip static fields
             }
 
+            LOG.debug("Serializing field '{}'...", field.getName());
             if (!field.getType().equals(prev)) {
                 if (prev != null) props.add(""); // Add a blank line for readability
                 prev = field.getType();
@@ -89,14 +94,15 @@ class SettingsHelper {
                 }
 
                 props.add(field.getName() + "=" + value);
-            } catch (IllegalAccessException e) {
-                // Handle access exceptions silently
+            } catch (final IllegalAccessException e) {
+                LOG.info("Failed to serialize field '{}'!", field.getName(), e);
             } finally {
                 field.setAccessible(false);
             }
         }
 
         store(to, props);
+        LOG.debug("Stored configuration!");
     }
 
     /**
@@ -128,12 +134,15 @@ class SettingsHelper {
      * @param from The {@link Path} to the file containing the settings.
      */
     public static void load(final DeskterminalSettings settings, final Path from) {
+        LOG.debug("Loading configuration...");
         try (final InputStream is = Files.newInputStream(from)) {
             final Properties props = new Properties();
             props.load(is);
             props.forEach((k, v) -> setField(settings, k, v));
+
+            LOG.debug("Loaded configuration!");
         } catch (final IOException e) {
-            // Handle file read exceptions silently
+            LOG.error("Failed to read configuration from file '{}'!", from, e);
         }
     }
 
@@ -147,7 +156,9 @@ class SettingsHelper {
     private static void setField(final DeskterminalSettings settings, final Object key, Object value) {
         try {
             final Field field = DeskterminalSettings.class.getDeclaredField(key.toString());
-            if (Modifier.isStatic(field.getModifiers())) return; // Skip static fields
+            if (Modifier.isStatic(field.getModifiers())) {
+                return; // Skip static fields
+            }
 
             field.setAccessible(true);
 
@@ -162,10 +173,12 @@ class SettingsHelper {
                 value = new File((String) value);
             }
 
-            if (value != null) field.set(settings, value);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+            if (value != null) {
+                field.set(settings, value);
+            }
+        } catch (final NoSuchFieldException | IllegalAccessException e) {
             // Handle reflection-related exceptions silently
-            System.out.println("krhsgikh");
+            LOG.error("Failed to deserialize configuration field '{}'!", key, e);
         }
     }
 

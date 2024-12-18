@@ -11,6 +11,8 @@ import javax.swing.JFrame;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import mslinks.ShellLink;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for interacting with the Windows API using JNA (Java Native Access). Provides methods for manipulating
@@ -18,6 +20,7 @@ import mslinks.ShellLink;
  */
 @UtilityClass
 public class WindowsUtils {
+    private static final Logger LOG = LoggerFactory.getLogger(WindowsUtils.class);
 
     /** JNA interface for interacting with the Windows `User32` library. */
     private static final User32 USER_32 = Native.load("user32", User32.class, W32APIOptions.DEFAULT_OPTIONS);
@@ -42,11 +45,15 @@ public class WindowsUtils {
      * @param frame The {@link JFrame} to style as a tool window.
      */
     public static void unstyleFrame(final JFrame frame) {
+        LOG.debug("Unstyling window...");
+
         final Pointer hwnd = getHWND(frame);
         final Pointer progman = USER_32.FindWindowA("Progman", null);
 
         USER_32.SetParent(hwnd, progman);
         USER_32.SetWindowLong(hwnd, GWL_EXSTYLE, USER_32.GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_TOOLWINDOW);
+
+        LOG.debug("Unstyled window!");
     }
 
     /**
@@ -65,6 +72,8 @@ public class WindowsUtils {
                 frame.getWidth(),
                 frame.getHeight(),
                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+
+        LOG.debug("Moved window to the background");
     }
 
     /**
@@ -101,6 +110,7 @@ public class WindowsUtils {
         ShellLink.createLink(
                 appPath.toAbsolutePath().toString(),
                 STARTUP_PATH.toAbsolutePath().toString());
+        LOG.info("Moved application to startup directory");
     }
 
     /** Interface for the Windows `User32` library, providing access to window manipulation functions. */

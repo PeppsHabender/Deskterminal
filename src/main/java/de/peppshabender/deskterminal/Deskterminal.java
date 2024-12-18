@@ -18,9 +18,12 @@ import java.nio.charset.StandardCharsets;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Main class for initializing and running Deskterminal. */
 public class Deskterminal {
+    private static final Logger LOG = LoggerFactory.getLogger(Deskterminal.class);
 
     /** Main application frame used to host the terminal. */
     private final JFrame mainFrame = new JFrame();
@@ -33,9 +36,11 @@ public class Deskterminal {
      * tray.
      */
     private Deskterminal() {
+        LOG.debug("Initializing Deskterminal...");
         LafManager.installTheme(new OneDarkTheme()); // Install the OneDark theme
         initMainFrame(); // Initialize the main frame
         initTerminal(); // Initialize the terminal
+        LOG.info("Initialized Deskterminal!");
     }
 
     /**
@@ -44,6 +49,7 @@ public class Deskterminal {
      */
     @SneakyThrows
     private void initMainFrame() {
+        LOG.debug("Initializing main frame...");
         this.mainFrame.setIconImage(ImageIO.read(R4J.asUrl(MainResources.DESKTERMINAL)));
 
         this.mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -62,6 +68,7 @@ public class Deskterminal {
                 Deskterminal.this.terminal.requestFocus(); // Focus the terminal
             }
         });
+        LOG.debug("Initialized main frame!");
     }
 
     /**
@@ -69,10 +76,12 @@ public class Deskterminal {
      * appearance.
      */
     private void initTerminal() {
+        LOG.debug("Initializing jediterm...");
         this.terminal = new JediTerminal(this.mainFrame);
         this.terminal.setTtyConnector(createTtyConnector()); // Set the terminal's TTY connector
         this.terminal.setOpaque(false); // Set the terminal to be transparent
         this.terminal.setBackground(new Color(0, 0, 0, 0)); // Set the background to transparent
+        LOG.debug("Initialized jediterm!");
     }
 
     /**
@@ -109,10 +118,12 @@ public class Deskterminal {
         process.waitFor();
 
         if (DeskterminalSettings.get().isExitOnExit()) {
+            LOG.info("Process ended.. Exiting gracefully.");
             System.exit(0);
             return;
         }
 
+        LOG.info("Process ended.. Creating new one");
         this.terminal.getTerminal().reset(true);
 
         final TtyConnector connector = createTtyConnector();
@@ -125,6 +136,7 @@ public class Deskterminal {
      * is styled correctly using the Windows API.
      */
     public void run() {
+        LOG.info("Running deskterminal...");
         this.mainFrame.setVisible(true);
 
         WindowsUtils.unstyleFrame(this.mainFrame); // Unstyle the window (remove border and other styles)

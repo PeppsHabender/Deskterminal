@@ -12,7 +12,7 @@ plugins {
 ///////// Constants
 
 group = "de.peppshabender"
-version = "0.0.2"
+version = "0.0.3"
 val distGroup = "dist"
 val distDir = "distributions"
 val appName = "Deskterminal"
@@ -44,9 +44,14 @@ dependencies {
     annotationProcessor(libs.lombok)
     compileOnly(libs.lombok)
 
+    implementation(libs.logging.slf4j.api)
+    implementation(libs.logging.logback.core)
+    implementation(libs.logging.logback.classic)
+
     implementation(libs.jediterm.ui)
     implementation(libs.jediterm.core)
     implementation(libs.jediterm.pty)
+
     implementation(libs.pty4j)
     implementation(libs.jna)
     implementation(libs.darklaf.core)
