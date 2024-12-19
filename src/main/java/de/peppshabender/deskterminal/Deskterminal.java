@@ -14,7 +14,9 @@ import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import lombok.SneakyThrows;
@@ -90,27 +92,47 @@ public class Deskterminal {
      *
      * @return The {@link TtyConnector} instance used to communicate with the terminal process.
      */
-    @SneakyThrows
     private TtyConnector createTtyConnector() {
-        final String[] command = new String[] {DeskterminalSettings.get().getCommand()};
+        return createTtyConnector(DeskterminalSettings.get().getCommand().split(" "));
+    }
 
+    /**
+     * Creates a TTY connector for the terminal using a specified command. This method creates a pseudo-terminal (PTY)
+     * process and connects it to the terminal.
+     *
+     * @param command Command to start the connector with
+     * @return The {@link TtyConnector} instance used to communicate with the terminal process.
+     */
+    @SneakyThrows
+    private TtyConnector createTtyConnector(final String[] command) {
         final DeskterminalSettings settings = DeskterminalSettings.get();
         final FontMetrics font = this.terminal.getFontMetrics(settings.getFont());
         final PtyProcessBuilder processBuilder = new PtyProcessBuilder()
                 .setCommand(command)
-                // Roughly approximate the column size here without any padding so we don't overshoot
+                // Roughly approximate the column and row size here without any padding so we don't overshoot
                 .setInitialColumns(DeskterminalSettings.get().getWidth() / font.charWidth('M') - 1)
+                .setInitialRows(DeskterminalSettings.get().getWidth() / font.getHeight() - 1)
                 .setWindowsAnsiColorEnabled(true)
                 .setEnvironment(System.getenv());
         if (settings.getInitialDirectory() != null) {
             processBuilder.setDirectory(settings.getInitialDirectory());
         }
 
-        final PtyProcess process = processBuilder.start();
-        // Start a separate thread to wait for the process to exit
-        new Thread(() -> waitFor(process)).start();
+        try {
+            final PtyProcess process = processBuilder.start();
+            // Start a separate thread to wait for the process to exit
+            new Thread(() -> waitFor(process)).start();
 
-        return new PtyProcessTtyConnector(process, StandardCharsets.UTF_8);
+            return new PtyProcessTtyConnector(process, StandardCharsets.UTF_8);
+        } catch (final IOException e) {
+            final String[] cmd = new String[] {"cmd.exe"};
+            if (Arrays.equals(cmd, command)) {
+                System.exit(1);
+            }
+
+            LOG.error("Failed to create pty process, falling back to cmd.exe...", e);
+            return createTtyConnector(cmd);
+        }
     }
 
     @SneakyThrows
