@@ -29,8 +29,8 @@ jobs:
         run: ./gradlew zipDist
       - name: Build Bundled
         run: ./gradlew zipBundledDist
-      - name: Delete tag from remote
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/master')
+      - name: Delete snapshot tag
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -39,6 +39,7 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "build/distributions/*.zip"
+          allowUpdates: ${{ github.ref == 'refs/heads/main' }}
           tag: ${{ github.ref == 'refs/heads/main' && 'Snapshot' || github.ref }}
           commit: ${{ github.sha }}
-          prerelease: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prerelease: ${{ github.ref == 'refs/heads/main' }}
