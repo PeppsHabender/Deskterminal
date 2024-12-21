@@ -111,7 +111,7 @@ public class Deskterminal {
                 .setCommand(command)
                 // Roughly approximate the column and row size here without any padding so we don't overshoot
                 .setInitialColumns(DeskterminalSettings.get().getWidth() / font.charWidth('M') - 1)
-                .setInitialRows(DeskterminalSettings.get().getWidth() / font.getHeight() - 1)
+                .setInitialRows(DeskterminalSettings.get().getHeight() / font.getHeight() - 1)
                 .setWindowsAnsiColorEnabled(true)
                 .setEnvironment(System.getenv());
         if (settings.getInitialDirectory() != null) {

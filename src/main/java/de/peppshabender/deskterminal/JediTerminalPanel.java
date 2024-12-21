@@ -58,15 +58,15 @@ class JediTerminalPanel extends TerminalPanel {
     protected @NotNull JPopupMenu createPopupMenu(@NotNull TerminalActionProvider actionProvider) {
         final JPopupMenu menu = super.createPopupMenu(actionProvider);
         menu.addSeparator();
-        addCustomItems(menu, "Edit Configuration");
+
+        final JMenuItem configItem = menu.add("Edit Configuration");
+        configItem.addActionListener(e -> toggleDecoration(this.terminal.getMainFrame()));
+        addCustomItems(menu, configItem);
 
         return menu;
     }
 
-    private void addCustomItems(final JPopupMenu menu, final String configLabel) {
-        final JMenuItem configItem = menu.add(configLabel);
-        configItem.addActionListener(e -> toggleDecoration(this.terminal.getMainFrame()));
-
+    private void addCustomItems(final JPopupMenu menu, final JMenuItem... more) {
         if (!WindowsUtils.isAutoStart()) {
             final JCheckBoxMenuItem autoStartItem = new JCheckBoxMenuItem("Autostart");
             autoStartItem.setSelected(WindowsUtils.isAutoStart());
@@ -76,6 +76,8 @@ class JediTerminalPanel extends TerminalPanel {
                 autoStartItem.setSelected(WindowsUtils.isAutoStart());
             });
         }
+
+        Arrays.stream(more).forEach(menu::add);
 
         menu.addSeparator();
 
@@ -96,14 +98,6 @@ class JediTerminalPanel extends TerminalPanel {
         } else {
             hideTerminal(mainFrame);
         }
-
-        // Save the window's new size and position
-        final DeskterminalSettings settings = DeskterminalSettings.get();
-        settings.setX(mainFrame.getX());
-        settings.setY(mainFrame.getY());
-        settings.setWidth(mainFrame.getWidth());
-        settings.setHeight(mainFrame.getHeight());
-        DeskterminalSettings.store();
     }
 
     private void showTerminal(final JFrame mainFrame) {
@@ -128,7 +122,14 @@ class JediTerminalPanel extends TerminalPanel {
         panel.setBorder(border);
 
         final JPopupMenu popupMenu = new JPopupMenu();
-        addCustomItems(popupMenu, "Save Configuration              ");
+        final JMenuItem saveConfig = saveConfigItem(mainFrame);
+
+        final JMenuItem cancelItem = new JMenuItem("Cancel");
+        cancelItem.addActionListener(e -> {
+            DeskterminalSettings.reset();
+            toggleDecoration(mainFrame);
+        });
+        addCustomItems(popupMenu, saveConfig, cancelItem);
         panel.setComponentPopupMenu(popupMenu);
 
         final DeskterminalSettingsEditor editor = new DeskterminalSettingsEditor();
@@ -136,5 +137,22 @@ class JediTerminalPanel extends TerminalPanel {
         panel.add(editor, BorderLayout.CENTER);
 
         mainFrame.getContentPane().add(panel);
+    }
+
+    private JMenuItem saveConfigItem(JFrame mainFrame) {
+        final JMenuItem saveConfig = new JMenuItem("Save Configuration     ");
+        saveConfig.addActionListener(e -> {
+            // Save the window's new size and position
+            final DeskterminalSettings settings = DeskterminalSettings.get();
+            settings.setX(mainFrame.getX());
+            settings.setY(mainFrame.getY());
+            settings.setWidth(mainFrame.getWidth());
+            settings.setHeight(mainFrame.getHeight());
+            DeskterminalSettings.store();
+
+            toggleDecoration(mainFrame);
+        });
+
+        return saveConfig;
     }
 }

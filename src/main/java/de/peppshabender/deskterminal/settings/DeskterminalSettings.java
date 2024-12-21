@@ -129,6 +129,12 @@ public class DeskterminalSettings {
         return INSTANCE;
     }
 
+    /** Resets the configuration to the one currently stored on disk. */
+    public static void reset() {
+        INSTANCE = null;
+        get();
+    }
+
     /** Saves the current settings to the configuration file. If no instance exists, this method does nothing. */
     public static void store() {
         if (INSTANCE == null) return;

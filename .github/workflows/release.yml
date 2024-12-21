@@ -40,6 +40,6 @@ jobs:
         with:
           artifacts: "build/distributions/*.zip"
           allowUpdates: ${{ github.ref == 'refs/heads/main' }}
-          tag: ${{ github.ref == 'refs/heads/main' && 'Snapshot' || github.ref }}
+          tag: ${{ github.ref == 'refs/heads/main' && 'Snapshot' || '' }}
           commit: ${{ github.sha }}
           prerelease: ${{ github.ref == 'refs/heads/main' }}
